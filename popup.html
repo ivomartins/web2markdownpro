@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+  <style>
+    body { width: 250px; padding: 15px; font-family: sans-serif; }
+    .option-group { background: #eee; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+    button { width: 100%; padding: 10px; background: #2ea44f; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    #status { font-size: 0.8em; color: #666; margin-top: 10px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="option-group">
+    <input type="radio" id="urlOnly" name="imgOpt" value="url" checked>
+    <label for="urlOnly">Option 1) 🔗 Only Keep Image URLs reference inside MD file</label><br>
+    <input type="radio" id="downloadImgs" name="imgOpt" value="zip">
+    <label for="downloadImgs"> Option2) 📦 Also Download Images as a Bundle (ZIP = MD + images)</label>
+  </div>
+  <button id="saveBtn">Download</button>
+  <div id="status"></div>
+
+  <script src="lib/jszip.js"></script>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
