@@ -1,88 +1,121 @@
-# Web2Markdown Pro 📦
+# Web2Markdown Pro
 
-**Web2Markdown Pro** is a powerful, privacy-first Chrome extension that distills cluttered webpages into clean, portable Markdown files. Perfect for building a "Second Brain" in apps like **Obsidian, Notion, and Logseq**, it ensures you capture the content you care about—not the ads.
+**Web2Markdown Pro** is a privacy-first Chrome extension that turns cluttered webpages into clean, portable Markdown files. It is designed for saving articles, documentation, and research notes into tools like **Obsidian, Notion, and Logseq**.
 
 ![Markdown Symbol](https://img.shields.io/badge/Format-Markdown-blue) ![Chrome Manifest V3](https://img.shields.io/badge/Manifest-V3-green) ![License-MIT](https://img.shields.io/badge/License-MIT-yellow)
 
 ---
 
-## 🚀 Features
+## Features
 
-* **Smart Content Extraction:** Uses Mozilla's **Readability.js** to identify the main article and strip away navigation bars, ads, and footers.
-* **Dual Saving Modes:**
-    * **🔗 Keep URLs:** Generates a single `.md` file with links to original image sources.
-    * **📦 Bundle Images (ZIP):** Downloads all images from the article and packages them with your Markdown file in a organized `.zip` archive.
-* **Asset Management:** Automatically re-maps image paths (e.g., `![alt](./images/img_0.png)`) for seamless local browsing.
-* **Privacy First:** No servers, no tracking, and no data collection. All processing happens locally on your machine.
-* **Modern Architecture:** Fully compliant with **Chrome Manifest V3 (2026)** standards.
+* **Smart content extraction:** Uses Mozilla's Readability.js to identify the main article and strip away navigation bars, ads, and footers.
+* **Markdown download:** Saves a clean `.md` file with source URLs preserved.
+* **Copy Markdown:** Copies the converted Markdown directly to your clipboard.
+* **Image bundling:** Downloads article images and packages them with the Markdown file in an organized ZIP archive.
+* **Clean archive layout:** ZIP exports use a folder structure like `article-title/article-title.md` and `article-title/images/`.
+* **Useful metadata:** Adds YAML front matter with the page title, source URL, and capture date.
+* **Remembered preference:** Keeps your last selected image handling mode.
+* **Privacy first:** No servers, no tracking, and no data collection. All processing happens locally in your browser.
 
 ---
 
-## 🛠️ Installation
+## Installation
 
-### For Users (Chrome Web Store)
-*Coming Soon!* (Add your store link here once published).
+### For Users
 
-### For Developers (Manual Install)
-1.  **Clone the Repo:**
+Chrome Web Store listing coming soon.
+
+### For Developers
+
+1. Clone the repo:
     ```bash
     git clone https://github.com/ivomartins/web2markdown-pro.git
     ```
-2.  Open Chrome and navigate to `chrome://extensions/`.
-3.  Enable **Developer Mode** (toggle in the top-right corner).
-4.  Click **Load unpacked** and select the project folder.
+2. Open Chrome and navigate to `chrome://extensions/`.
+3. Enable **Developer Mode**.
+4. Click **Load unpacked** and select the project folder.
 
 ---
 
-## 📖 How to Use
+## How To Use
 
-1.  Navigate to any blog post, news article, or documentation page.
-2.  Click the **Web2Markdown Pro** icon in your browser toolbar.
-3.  Choose your image handling preference:
-    * **Only Keep URLs:** Best for quick notes and cloud-based systems.
-    * **Bundle Images (ZIP):** Best for permanent archiving and offline vaults.
-4.  Click **Download** and your clean Markdown is ready to go!
+1. Navigate to a blog post, news article, documentation page, or other webpage.
+2. Click the **Web2Markdown Pro** icon in your browser toolbar.
+3. Choose your image handling preference:
+    * **Keep image URLs in Markdown:** Best for quick notes and cloud-based systems.
+    * **Bundle Markdown and images as ZIP:** Best for permanent archiving and offline vaults.
+4. Click **Download** to save the file, or **Copy Markdown** to paste it elsewhere.
 
 ---
 
-## 📁 Project Structure
+## Markdown Output
+
+Exports include front matter like this:
+
+```md
+---
+title: "Article Title"
+source: "https://example.com/article"
+captured: "2026-06-13"
+---
+
+# Article Title
+```
+
+ZIP exports use this structure:
 
 ```text
-web2markdown-pro/
-├── manifest.json       # Extension configuration
-├── popup.html          # User interface
-├── popup.js            # Main conversion & bundling logic
-├── icons/              # Extension branding (16, 48, 128)
-└── lib/                # Local bundled libraries
-    ├── readability.js  # Content extraction (Mozilla)
-    ├── turndown.js     # HTML to Markdown converter
-    └── jszip.min.js    # ZIP generation
+2026-06-13_article-title/
+  2026-06-13_article-title.md
+  images/
+    img_0.jpg
+    img_1.png
 ```
 
 ---
 
-## 🔒 Privacy & Security
+## Project Structure
 
-We take your data seriously. **Web2Markdown Pro** does not collect, store, or transmit any user data. 
-* **No Analytics:** No Google Analytics or third-party trackers.
-* **Local Execution:** Image fetching and Markdown generation occur strictly in your browser.
-* **No Remote Code:** Every library used is bundled locally to prevent injection attacks.
-
----
-
-## 📜 Credits & Acknowledgments
-
-This project is built on the shoulders of giants:
-* [Readability.js](https://github.com/mozilla/readability) - For the magic behind the "clean" extraction.
-* [Turndown](https://github.com/mixmark-io/turndown) - For high-fidelity HTML-to-Markdown conversion.
-* [JSZip](https://github.com/Stuk/jszip) - For seamless local asset bundling.
+```text
+web2markdown-pro/
++-- manifest.json       # Extension configuration
++-- popup.html          # User interface
++-- popup.js            # Main conversion and bundling logic
++-- icons/              # Extension branding
+`-- lib/                # Local bundled libraries
+    +-- Readability.js  # Content extraction
+    +-- turndown.js     # HTML to Markdown conversion
+    `-- jszip.js        # ZIP generation
+```
 
 ---
 
-## ⚖️ License
+## Privacy & Security
+
+Web2Markdown Pro does not collect, store, or transmit user data.
+
+* **No analytics:** No Google Analytics or third-party trackers.
+* **Local execution:** Image fetching and Markdown generation happen in your browser.
+* **No remote code:** Every library used by the extension is bundled locally.
+
+---
+
+## Support
+
+If Web2Markdown Pro is useful to you, you can [support development](https://buymeacoffee.com/ivomartins).
+
+---
+
+## Credits
+
+This project is built with:
+
+* [Readability.js](https://github.com/mozilla/readability)
+* [Turndown](https://github.com/mixmark-io/turndown)
+* [JSZip](https://github.com/Stuk/jszip)
+
+---
+
+## License
 
 Distributed under the **MIT License**. See `LICENSE` for more information.
-
----
-
-> **Built for the open web. Happy archiving!** 🚀
