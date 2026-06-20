@@ -12,6 +12,7 @@
 * **GitHub Flavored Markdown:** Converts tables, strikethrough, and task lists correctly via the bundled Turndown GFM plugin.
 * **Absolute links:** Rewrites relative links and image references to absolute URLs so they keep working outside the original site.
 * **Markdown download:** Saves a clean `.md` file with source URLs preserved.
+* **Markdown preview:** Preview the converted Markdown inside the popup before you download or copy it.
 * **Copy Markdown:** Copies the converted Markdown directly to your clipboard.
 * **Image bundling:** Downloads article images and packages them with the Markdown file in an organized ZIP archive. Image extensions are corrected from each response's content type.
 * **Clean archive layout:** ZIP exports use a folder structure like `article-title/article-title.md` and `article-title/images/`.
@@ -46,7 +47,8 @@ Chrome Web Store listing coming soon.
 3. Choose your image handling preference:
     * **Keep image URLs in Markdown:** Best for quick notes and cloud-based systems.
     * **Bundle Markdown and images as ZIP:** Best for permanent archiving and offline vaults.
-4. Click **Download** to save the file, or **Copy Markdown** to paste it elsewhere.
+4. Optionally click **Preview** to review the converted Markdown inside the popup first.
+5. Click **Download** to save the file, or **Copy Markdown** to paste it elsewhere.
 
 ---
 

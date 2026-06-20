@@ -2,7 +2,10 @@ const SUPPORT_URL = 'https://buymeacoffee.com/ivomartins';
 
 const saveBtn = document.getElementById('saveBtn');
 const copyBtn = document.getElementById('copyBtn');
+const previewBtn = document.getElementById('previewBtn');
 const statusEl = document.getElementById('status');
+const previewSection = document.getElementById('preview');
+const previewText = document.getElementById('previewText');
 const supportLink = document.getElementById('supportLink');
 
 initPopup();
@@ -18,6 +21,7 @@ function initPopup() {
 
   saveBtn.addEventListener('click', handleDownload);
   copyBtn.addEventListener('click', handleCopy);
+  previewBtn.addEventListener('click', handlePreview);
   supportLink.addEventListener('click', (event) => {
     event.preventDefault();
     chrome.tabs.create({ url: SUPPORT_URL });
@@ -66,9 +70,25 @@ async function handleCopy() {
   });
 }
 
+async function handlePreview() {
+  await runWithBusyState(async () => {
+    setStatus('Converting page...');
+    const data = await convertActiveTab(getSelectedImageOption());
+    previewText.value = data.markdown;
+    previewSection.hidden = false;
+    document.body.classList.add('preview-open');
+    setStatus(`Preview ready. ${countWords(data.markdown)} words.`);
+  });
+}
+
+function countWords(text) {
+  return String(text || '').trim().split(/\s+/).filter(Boolean).length;
+}
+
 async function runWithBusyState(task) {
   saveBtn.disabled = true;
   copyBtn.disabled = true;
+  previewBtn.disabled = true;
 
   try {
     await task();
@@ -78,6 +98,7 @@ async function runWithBusyState(task) {
   } finally {
     saveBtn.disabled = false;
     copyBtn.disabled = false;
+    previewBtn.disabled = false;
   }
 }
 

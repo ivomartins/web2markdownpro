@@ -4,14 +4,33 @@
 <meta charset="UTF-8">
 
   <style>
-    body { width: 280px; padding: 15px; font-family: sans-serif; color: #24292f; }
+    body { width: 280px; padding: 15px; font-family: sans-serif; color: #24292f; transition: width 0.15s ease; }
+    body.preview-open { width: 420px; }
     .option-group { background: #f3f4f6; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
     .option { display: flex; gap: 6px; align-items: flex-start; margin: 6px 0; line-height: 1.3; }
     .actions { display: grid; gap: 8px; }
     button { width: 100%; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: 600; }
     #saveBtn { background: #2ea44f; color: white; border: none; }
-    #copyBtn { background: #f6f8fa; color: #24292f; border: 1px solid #d0d7de; }
+    #copyBtn, #previewBtn { background: #f6f8fa; color: #24292f; border: 1px solid #d0d7de; }
     #status { min-height: 16px; font-size: 0.8em; color: #666; margin-top: 10px; text-align: center; }
+    #preview[hidden] { display: none; }
+    #preview { margin-top: 10px; }
+    #previewText {
+      width: 100%;
+      height: 220px;
+      box-sizing: border-box;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.75em;
+      line-height: 1.4;
+      padding: 8px;
+      border: 1px solid #d0d7de;
+      border-radius: 5px;
+      resize: vertical;
+      white-space: pre;
+      overflow: auto;
+      background: #f6f8fa;
+      color: #24292f;
+    }
     .footer { margin-top: 12px; text-align: center; }
     .footer a { color: #777; font-size: 0.75em; text-decoration: none; }
     .footer a:hover { text-decoration: underline; }
@@ -31,8 +50,12 @@
   <div class="actions">
     <button id="saveBtn">Download</button>
     <button id="copyBtn">Copy Markdown</button>
+    <button id="previewBtn">Preview</button>
   </div>
   <div id="status"></div>
+  <div id="preview" hidden>
+    <textarea id="previewText" readonly spellcheck="false"></textarea>
+  </div>
   <div class="footer">
     <a href="https://buymeacoffee.com/ivomartins" id="supportLink">Support development</a>
   </div>
