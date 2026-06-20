@@ -89,7 +89,7 @@ async function convertActiveTab(imageOption) {
 
   await chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    files: ['./lib/Readability.js', './lib/turndown.js']
+    files: ['./lib/Readability.js', './lib/turndown.js', './lib/turndown-plugin-gfm.js']
   });
 
   const capturedDate = formatLocalDate(new Date());
@@ -164,18 +164,37 @@ function processPageInsideTab(mode, capturedDate) {
     const title = String(rawTitle).replace(/\s+/g, ' ').trim() || 'Webpage';
     const sourceUrl = document.location.href;
 
+    // Metadata Readability already parsed for us.
+    const byline = article && article.byline ? article.byline.trim() : '';
+    const siteName = article && article.siteName ? article.siteName.trim() : '';
+    const excerpt = article && article.excerpt ? article.excerpt.trim() : '';
+    const readingTime = article && article.textContent
+      ? estimateReadingTime(article.textContent)
+      : '';
+
     const turndownService = new TurndownClass({
       headingStyle: 'atx',
       codeBlockStyle: 'fenced'
     });
 
+    // Add GitHub Flavored Markdown support (tables, strikethrough, task lists).
+    if (typeof turndownPluginGfm !== 'undefined' && turndownPluginGfm.gfm) {
+      turndownService.use(turndownPluginGfm.gfm);
+    }
+
     const imagesToDownload = [];
-    let finalHtml = contentHtml;
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = contentHtml;
+
+    // Absolutize links so they keep working once the file leaves the page origin.
+    tempDiv.querySelectorAll('a[href]').forEach((anchor) => {
+      const absoluteUrl = resolveUrl(anchor.getAttribute('href'));
+      if (absoluteUrl) {
+        anchor.setAttribute('href', absoluteUrl);
+      }
+    });
 
     if (mode === 'zip') {
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = contentHtml;
-
       tempDiv.querySelectorAll('img').forEach((img, index) => {
         const rawSrc = img.currentSrc || img.src || img.getAttribute('src');
         const absoluteUrl = resolveUrl(rawSrc);
@@ -183,23 +202,50 @@ function processPageInsideTab(mode, capturedDate) {
           return;
         }
 
-        const filename = `img_${index}.${getImageExtension(absoluteUrl)}`;
-        imagesToDownload.push({ url: absoluteUrl, filename });
+        const ext = getImageExtension(absoluteUrl);
+        const filename = `img_${index}.${ext}`;
+        imagesToDownload.push({ url: absoluteUrl, filename, index, ext });
         img.setAttribute('src', `./images/${filename}`);
         img.removeAttribute('srcset');
       });
-
-      finalHtml = tempDiv.innerHTML;
+    } else {
+      // Keep remote image references usable by making them absolute too.
+      tempDiv.querySelectorAll('img[src]').forEach((img) => {
+        const absoluteUrl = resolveUrl(img.currentSrc || img.getAttribute('src'));
+        if (absoluteUrl) {
+          img.setAttribute('src', absoluteUrl);
+          img.removeAttribute('srcset');
+        }
+      });
     }
+
+    const finalHtml = tempDiv.innerHTML;
 
     const contentMarkdown = turndownService.turndown(finalHtml).trim();
     const fileBase = buildFileBase(title, sourceUrl, capturedDate);
-    const markdown = [
+
+    const frontMatter = [
       '---',
       `title: "${escapeYaml(title)}"`,
-      `source: "${escapeYaml(sourceUrl)}"`,
-      `captured: "${capturedDate}"`,
-      '---',
+      `source: "${escapeYaml(sourceUrl)}"`
+    ];
+    if (byline) {
+      frontMatter.push(`author: "${escapeYaml(byline)}"`);
+    }
+    if (siteName) {
+      frontMatter.push(`site: "${escapeYaml(siteName)}"`);
+    }
+    if (excerpt) {
+      frontMatter.push(`excerpt: "${escapeYaml(excerpt)}"`);
+    }
+    if (readingTime) {
+      frontMatter.push(`reading_time: "${readingTime}"`);
+    }
+    frontMatter.push(`captured: "${capturedDate}"`);
+    frontMatter.push('---');
+
+    const markdown = [
+      ...frontMatter,
       '',
       `# ${title}`,
       '',
@@ -228,6 +274,15 @@ function processPageInsideTab(mode, capturedDate) {
     } catch (e) {
       return '';
     }
+  }
+
+  function estimateReadingTime(text) {
+    const words = String(text || '').trim().split(/\s+/).filter(Boolean).length;
+    if (!words) {
+      return '';
+    }
+    const minutes = Math.max(1, Math.round(words / 200));
+    return `${minutes} min`;
   }
 
   function getImageExtension(url) {
@@ -267,6 +322,28 @@ function processPageInsideTab(mode, capturedDate) {
   }
 }
 
+function extensionFromContentType(contentType) {
+  if (!contentType) {
+    return '';
+  }
+
+  const type = contentType.split(';')[0].trim().toLowerCase();
+  const map = {
+    'image/jpeg': 'jpg',
+    'image/jpg': 'jpg',
+    'image/png': 'png',
+    'image/gif': 'gif',
+    'image/webp': 'webp',
+    'image/svg+xml': 'svg',
+    'image/avif': 'avif',
+    'image/bmp': 'bmp',
+    'image/x-icon': 'ico',
+    'image/vnd.microsoft.icon': 'ico',
+    'image/tiff': 'tiff'
+  };
+  return map[type] || '';
+}
+
 async function createZipAndDownload(data) {
   if (typeof JSZip === 'undefined') {
     throw new Error('JSZip library not loaded. Check if lib/jszip.js exists.');
@@ -274,8 +351,8 @@ async function createZipAndDownload(data) {
 
   const zip = new JSZip();
   const bundleFolder = zip.folder(data.fileBase);
-  bundleFolder.file(`${data.fileBase}.md`, data.markdown);
 
+  let markdown = data.markdown;
   let downloadedImages = 0;
   const totalImages = data.images ? data.images.length : 0;
 
@@ -286,7 +363,15 @@ async function createZipAndDownload(data) {
         const resp = await fetch(img.url);
         if (resp.ok) {
           const blob = await resp.blob();
-          imgFolder.file(img.filename, blob);
+          // Prefer the server's reported type over the guessed URL extension.
+          const realExt = extensionFromContentType(resp.headers.get('content-type'))
+            || extensionFromContentType(blob.type);
+          let filename = img.filename;
+          if (realExt && realExt !== img.ext) {
+            filename = `img_${img.index}.${realExt}`;
+            markdown = markdown.split(`./images/${img.filename}`).join(`./images/${filename}`);
+          }
+          imgFolder.file(filename, blob);
           downloadedImages += 1;
         }
       } catch (e) {
@@ -294,6 +379,8 @@ async function createZipAndDownload(data) {
       }
     }
   }
+
+  bundleFolder.file(`${data.fileBase}.md`, markdown);
 
   const content = await zip.generateAsync({ type: 'blob' });
   const url = URL.createObjectURL(content);

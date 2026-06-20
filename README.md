@@ -9,11 +9,13 @@
 ## Features
 
 * **Smart content extraction:** Uses Mozilla's Readability.js to identify the main article and strip away navigation bars, ads, and footers.
+* **GitHub Flavored Markdown:** Converts tables, strikethrough, and task lists correctly via the bundled Turndown GFM plugin.
+* **Absolute links:** Rewrites relative links and image references to absolute URLs so they keep working outside the original site.
 * **Markdown download:** Saves a clean `.md` file with source URLs preserved.
 * **Copy Markdown:** Copies the converted Markdown directly to your clipboard.
-* **Image bundling:** Downloads article images and packages them with the Markdown file in an organized ZIP archive.
+* **Image bundling:** Downloads article images and packages them with the Markdown file in an organized ZIP archive. Image extensions are corrected from each response's content type.
 * **Clean archive layout:** ZIP exports use a folder structure like `article-title/article-title.md` and `article-title/images/`.
-* **Useful metadata:** Adds YAML front matter with the page title, source URL, and capture date.
+* **Rich metadata:** Adds YAML front matter with the page title, source URL, and capture date, plus the author, site name, excerpt, and estimated reading time when available.
 * **Remembered preference:** Keeps your last selected image handling mode.
 * **Privacy first:** No servers, no tracking, and no data collection. All processing happens locally in your browser.
 
@@ -56,11 +58,17 @@ Exports include front matter like this:
 ---
 title: "Article Title"
 source: "https://example.com/article"
+author: "Jane Doe"
+site: "Example Blog"
+excerpt: "A short summary of the article."
+reading_time: "6 min"
 captured: "2026-06-13"
 ---
 
 # Article Title
 ```
+
+The `author`, `site`, `excerpt`, and `reading_time` fields are only included when the page provides them.
 
 ZIP exports use this structure:
 
@@ -82,10 +90,11 @@ web2markdown-pro/
 +-- popup.html          # User interface
 +-- popup.js            # Main conversion and bundling logic
 +-- icons/              # Extension branding
-`-- lib/                # Local bundled libraries
-    +-- Readability.js  # Content extraction
-    +-- turndown.js     # HTML to Markdown conversion
-    `-- jszip.js        # ZIP generation
+`-- lib/                       # Local bundled libraries
+    +-- Readability.js         # Content extraction
+    +-- turndown.js            # HTML to Markdown conversion
+    +-- turndown-plugin-gfm.js # Tables, strikethrough, task lists
+    `-- jszip.js               # ZIP generation
 ```
 
 ---
